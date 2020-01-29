@@ -18,6 +18,7 @@
                 <br />
                 {{ data.taskDueDate }}
               </div>
+              <button class="btn-danger" @click="deleteTask(data)">Delete</button>
             </div>
           </li>
         </ul>
@@ -61,6 +62,16 @@ export default {
   methods: {
     newTask() {
       this.createTask = true;
+    },
+    deleteTask(data) {
+      this.tasks.filter((value, index) => {
+        if (
+          value.taskName == data.taskName &&
+          (value.taskDescription = data.taskDescription)
+        ) {
+          this.tasks.splice(index, 1);
+        }
+      });
     },
     onTaskSubmitted(newTask) {
       this.tasks.push(newTask);
