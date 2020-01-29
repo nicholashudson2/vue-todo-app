@@ -11,7 +11,7 @@
         v-model="taskName"
         @input="onChange"
       />
-      <ul class="autocomplete-results" v-if="suggestions.length >= 1 && task.length != 0">
+      <ul class="autocomplete-results" v-if="suggestions.length >= 1 && taskName.length != 0">
         <li
           class="autocomplete-result"
           v-for="(data, index) in suggestions"
@@ -61,7 +61,7 @@ export default {
   methods: {
     addTask() {
       var windowConsole = window.console;
-      windowConsole.log(this.task);
+      windowConsole.log(this.taskName);
       this.tasks.push({
         taskName: this.taskName,
         taskDescription: this.taskDescription,
@@ -81,7 +81,7 @@ export default {
         "&cp=1&client=psy-ab";
       axios({ method: "GET", url: searchURL }).then(result => {
         this.suggestions = [];
-        if (result && result.data && result.data.length >= 1) {
+        if (result && result.data && result.data.length) {
           result.data[1].reduce((acc, curr) =>
             this.suggestions.push(
               curr[0].replace("<b>", "").replace("</b>", "")

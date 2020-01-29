@@ -52,9 +52,7 @@ export default {
   data() {
     return {
       tasks: [],
-      suggestions: [],
-      createTask: false,
-      isOpen: false
+      createTask: false
     };
   },
   components: {
