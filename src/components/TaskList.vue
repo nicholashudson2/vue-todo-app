@@ -9,7 +9,11 @@
       <div class="task-list-column">
         <h3 v-if="incompleteTasks.length >= 1">Open Tasks:</h3>
         <ul class="incomplete-task-list">
-          <li v-for="(data) in incompleteTasks" :key="data.taskName">
+          <li
+            v-for="(data) in incompleteTasks"
+            :key="data.taskName"
+            :class="{'warning-red': new Date(data.taskDueDate) < Date.now(), 'warning-none': new Date(data.taskDueDate) >= Date.now()}"
+          >
             <div class="task">
               <input type="checkbox" v-model="data.completed" />
               <div class="task-details">
@@ -18,7 +22,7 @@
                 <br />
                 {{ data.taskDueDate }}
               </div>
-              <button class="btn-danger" @click="deleteTask(data)">Delete</button>
+              <button class="btn-danger" @click="deleteTask(data)">X</button>
             </div>
           </li>
         </ul>
@@ -36,6 +40,7 @@
                 <br />
                 {{ data.taskDueDate }}
               </div>
+              <button class="btn-danger" @click="deleteTask(data)">X</button>
             </div>
           </li>
         </ul>
@@ -83,10 +88,14 @@ export default {
   },
   computed: {
     incompleteTasks: function() {
-      return this.tasks.filter(task => task.completed == false);
+      return this.tasks
+        .filter(task => task.completed == false)
+        .sort((a, b) => (a.taskDueDate > b.taskDueDate ? 1 : -1));
     },
     completedTasks: function() {
-      return this.tasks.filter(task => task.completed == true);
+      return this.tasks
+        .filter(task => task.completed == true)
+        .sort((a, b) => (a.taskDueDate > b.taskDueDate ? 1 : -1));
     }
   }
 };
@@ -169,5 +178,9 @@ p {
 
 .container {
   box-shadow: 0px 0px 40px lightgray;
+}
+
+.warning-red {
+  border-color: red;
 }
 </style>
