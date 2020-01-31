@@ -116,9 +116,6 @@ export default {
       if (this.$v.form.$anyError) {
         return;
       }
-
-      var windowConsole = window.console;
-      windowConsole.log(this.task);
       this.$emit("submitted", {
         taskName: this.form.taskName,
         taskDescription: this.form.taskDescription,

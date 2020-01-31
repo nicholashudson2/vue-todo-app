@@ -1,6 +1,6 @@
 <template>
   <div class="holder">
-    <b-button size="sm" class="btn btn-success" @click="editTask(data)">Create New Task</b-button>
+    <b-button size="sm" class="btn btn-success" @click="editTask(null)">Create New Task</b-button>
     <div class="new-task-container" v-if="createTask == true">
       <NewTaskPane
         class="new-task-pane"
@@ -15,20 +15,23 @@
         <h3>Open Tasks:</h3>
         <ul class="incomplete-task-list">
           <li
-            v-for="(data) in incompleteTasks"
-            :key="data.taskName"
-            :class="{'warning-yellow': new Date(data.taskDueDate) < new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5), 'warning-none': new Date(data.taskDueDate) >= new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5)}"
+            v-for="(incompleteTask) in incompleteTasks"
+            :key="incompleteTask.taskName"
+            :class="{'warning-yellow': new Date(incompleteTask.taskDueDate) < new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5), 'warning-none': new Date(incompleteTask.taskDueDate) >= new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5)}"
           >
             <div class="task">
-              <input type="checkbox" v-model="data.completed" />
+              <input type="checkbox" v-model="incompleteTask.completed" />
               <div class="task-details">
-                <b>{{ data.taskName }}</b>
-                {{ data.taskDescription }}
+                <b>{{ incompleteTask.taskName }}</b>
+                {{ incompleteTask.taskDescription }}
                 <br />
-                {{ data.taskDueDate }}
+                {{ incompleteTask.taskDueDate }}
               </div>
-              <b-button class="btn-success" @click="editTask(data)">Edit</b-button>
-              <b-button class="btn-danger" @click="deleteTask(data)">X</b-button>
+
+              <b-button-group class="task-button-panel">
+                <b-button class="btn-success" @click="editTask(incompleteTask)">Edit</b-button>
+                <b-button class="btn-danger" @click="deleteTask(incompleteTask)">X</b-button>
+              </b-button-group>
             </div>
           </li>
         </ul>
@@ -37,16 +40,20 @@
       <div class="task-list-column right-column">
         <h3>Completed Tasks:</h3>
         <ul class="completed-task-list">
-          <li v-for="(data) in completedTasks" :key="data.taskName" class="warning-done">
+          <li
+            v-for="(completedTask) in completedTasks"
+            :key="completedTask.taskName"
+            class="warning-done"
+          >
             <div class="task">
-              <input type="checkbox" v-model="data.completed" />
+              <input type="checkbox" v-model="completedTask.completed" />
               <div class="task-details">
-                <b>{{ data.taskName }}</b>
-                {{ data.taskDescription }}
+                <b>{{ completedTask.taskName }}</b>
+                {{ completedTask.taskDescription }}
                 <br />
-                {{ data.taskDueDate }}
+                {{ completedTask.taskDueDate }}
               </div>
-              <b-button class="btn-danger" @click="deleteTask(data)">X</b-button>
+              <b-button class="btn-danger" @click="deleteTask(completedTask)">X</b-button>
             </div>
           </li>
         </ul>
@@ -161,10 +168,12 @@ export default {
   flex-direction: column;
   flex-basis: 1 1 auto;
   margin: 1em;
+  align-items: unset;
 }
 
 .right-column {
   border-left: 1px solid #cccccc;
+  padding-left: 2em;
 }
 
 .task {
@@ -179,6 +188,14 @@ export default {
   flex-direction: column;
   flex: auto;
   padding-left: 10px;
+}
+
+.task-button-panel {
+  justify-content: space-between;
+}
+
+.task-button-panel > button {
+  margin: 0.3em;
 }
 
 ul {
