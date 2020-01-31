@@ -1,9 +1,9 @@
 <template>
   <div class="task-dialog form-group">
     <div class="btn-toolbar mb-1 float-right">
-      <button class="btn btn-danger fa-window-close-o float-right btn-close" @click="cancel()">X</button>
+      <b-button class="btn btn-danger fa-window-close-o float-right btn-close" @click="cancel()">X</b-button>
     </div>
-    <b-form @submit.stop.prevent="onSubmit" @submit.prevent="addTask" class="col-12 input-form">
+    <b-form @submit.stop.prevent="onSubmit" @submit.prevent="onSubmit" class="col-12 input-form">
       <b-form-group id="title-input-group" class="form-group" label="Title" label-for="title-input">
         <b-input
           id="title-input"
@@ -33,11 +33,11 @@
         label="Description"
         label-for="description-input"
       >
-        <input
+        <b-input
           id="description-input"
           type="text"
           class="row text-area"
-          v-model="$v.form.taskDescription"
+          v-model="form.taskDescription"
         />
       </b-form-group>
 
@@ -47,7 +47,7 @@
         label="Due Date"
         label-for="date-input"
       >
-        <input class="date-select" type="date" id="due-date-input" v-model="$v.form.taskDueDate" />
+        <b-input class="date-select" type="date" id="due-date-input" v-model="form.taskDueDate" />
       </b-form-group>
     </b-form>
     <div class="btn-toolbar mr-4 float-right">
@@ -66,29 +66,24 @@ import required from "vuelidate/lib/validators/required";
 export default {
   mixins: [validationMixin],
   name: "NewTaskPane",
+  props: {
+    task: Object
+  },
   data() {
     return {
       form: {
-        taskName: "",
-        taskDescription: "",
-        taskDueDate: ""
+        taskName: this.$props.task ? this.$props.task.taskName : "",
+        taskDescription: this.$props.task
+          ? this.$props.task.taskDescription
+          : "",
+        taskDueDate: this.$props.task ? this.$props.task.taskDueDate : "",
+        completed: this.$props.task ? this.$props.task.completed : false
       },
       suggestions: [],
       isOpen: false
     };
   },
   methods: {
-    addTask() {
-      var windowConsole = window.console;
-      windowConsole.log(this.$v.form.taskName);
-      this.tasks.push({
-        taskName: this.form.taskName,
-        taskDescription: this.form.taskDescription,
-        taskDueDate: this.form.taskDueDate,
-        completed: false
-      });
-      this.$v.form.taskName = "";
-    },
     onChange() {
       this.isOpen = true;
       this.filterResults();
@@ -128,7 +123,7 @@ export default {
         taskName: this.form.taskName,
         taskDescription: this.form.taskDescription,
         taskDueDate: this.form.taskDueDate,
-        completed: false
+        completed: this.completed ? this.completed : false
       });
       this.form.taskName = "";
       this.form.taskDescription = "";
@@ -211,7 +206,7 @@ input {
   margin: 5px;
 }
 
-button {
+b-button {
   border-radius: 0.3em;
 }
 

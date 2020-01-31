@@ -1,18 +1,23 @@
 <template>
   <div class="holder">
-    <button size="sm" class="btn btn-success" @click="newTask()">Create New Task</button>
+    <b-button size="sm" class="btn btn-success" @click="editTask(data)">Create New Task</b-button>
     <div class="new-task-container" v-if="createTask == true">
-      <NewTaskPane class="new-task-pane" @submitted="onTaskSubmitted" @cancelled="onTaskCancelled" />
+      <NewTaskPane
+        class="new-task-pane"
+        v-bind:task="currentTask"
+        @submitted="onTaskSubmitted"
+        @cancelled="onTaskCancelled"
+      />
     </div>
 
     <div class="task-list-columns-panel">
       <div class="task-list-column">
-        <h3 v-if="incompleteTasks.length >= 1">Open Tasks:</h3>
+        <h3>Open Tasks:</h3>
         <ul class="incomplete-task-list">
           <li
             v-for="(data) in incompleteTasks"
             :key="data.taskName"
-            :class="{'warning-red': new Date(data.taskDueDate) < Date.now(), 'warning-yellow': new Date(data.taskDueDate) < new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5), 'warning-none': new Date(data.taskDueDate) >= Date.now()}"
+            :class="{'warning-yellow': new Date(data.taskDueDate) < new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5), 'warning-none': new Date(data.taskDueDate) >= new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5)}"
           >
             <div class="task">
               <input type="checkbox" v-model="data.completed" />
@@ -22,25 +27,26 @@
                 <br />
                 {{ data.taskDueDate }}
               </div>
-              <button class="btn-danger" @click="deleteTask(data)">X</button>
+              <b-button class="btn-success" @click="editTask(data)">Edit</b-button>
+              <b-button class="btn-danger" @click="deleteTask(data)">X</b-button>
             </div>
           </li>
         </ul>
       </div>
 
-      <div class="task-list-column">
-        <h3 v-if="completedTasks.length >= 1">Completed Tasks:</h3>
+      <div class="task-list-column right-column">
+        <h3>Completed Tasks:</h3>
         <ul class="completed-task-list">
           <li v-for="(data) in completedTasks" :key="data.taskName" class="warning-done">
             <div class="task">
-              <input class="form-check-input" type="checkbox" v-model="data.completed" />
+              <input type="checkbox" v-model="data.completed" />
               <div class="task-details">
                 <b>{{ data.taskName }}</b>
                 {{ data.taskDescription }}
                 <br />
                 {{ data.taskDueDate }}
               </div>
-              <button class="btn-danger" @click="deleteTask(data)">X</button>
+              <b-button class="btn-danger" @click="deleteTask(data)">X</b-button>
             </div>
           </li>
         </ul>
@@ -57,6 +63,7 @@ export default {
   name: "TaskList",
   data() {
     return {
+      currentTask: null,
       tasks: [],
       createTask: false
     };
@@ -65,23 +72,32 @@ export default {
     NewTaskPane
   },
   methods: {
-    newTask() {
-      this.createTask = true;
-    },
-    deleteTask(data) {
+    deleteTask(task) {
       if (confirm("Are you sure you want to delete this task?")) {
-        this.tasks.filter((value, index) => {
-          if (
-            value.taskName == data.taskName &&
-            value.taskDescription == data.taskDescription
-          ) {
-            this.tasks.splice(index, 1);
-          }
-        });
+        this.removeTaskFromList(task);
       }
     },
+    editTask(task) {
+      this.currentTask = task;
+      this.createTask = true;
+    },
+    removeTaskFromList(task) {
+      this.tasks.filter((value, index) => {
+        if (
+          value.taskName == task.taskName &&
+          value.taskDescription == task.taskDescription
+        ) {
+          this.tasks.splice(index, 1);
+        }
+      });
+    },
     onTaskSubmitted(newTask) {
-      this.tasks.push(newTask);
+      if (this.currentTask != null) {
+        this.removeTaskFromList(this.currentTask);
+        this.tasks.push(newTask);
+      } else {
+        this.tasks.push(newTask);
+      }
       this.createTask = false;
     },
     onTaskCancelled() {
@@ -128,6 +144,7 @@ export default {
 .new-task-pane {
   opacity: 1;
   padding: 5px;
+  border-radius: 0.3em;
 }
 
 .task-list-columns-panel {
@@ -135,25 +152,32 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   margin: 0;
+  height: 100%;
 }
 
 .task-list-column {
   display: flex;
+  flex: auto;
   flex-direction: column;
-  flex-basis: 1 0 auto;
-  margin: 0;
+  flex-basis: 1 1 auto;
+  margin: 1em;
+}
+
+.right-column {
+  border-left: 1px solid #cccccc;
 }
 
 .task {
   display: flex;
   flex-direction: row;
+  flex-basis: 1 1 auto;
   align-items: center;
-  /* justify-content: center; */
 }
 
 .task-details {
   display: flex;
   flex-direction: column;
+  flex: auto;
   padding-left: 10px;
 }
 
@@ -168,6 +192,7 @@ ul li {
   font-size: 1.3em;
   background-color: #e0edf4;
   border-left: 5px solid #3eb3f6;
+  border-radius: 0.3em;
   margin-bottom: 2px;
   color: #3e5252;
 }
@@ -178,16 +203,17 @@ p {
   color: gray;
 }
 
+h3 {
+  width: 100%;
+  text-align: center;
+}
+
 .container {
   box-shadow: 0px 0px 40px lightgray;
 }
 
 .warning-yellow {
   border-color: yellow;
-}
-
-.warning-red {
-  border-color: red;
 }
 
 .warning-done {
