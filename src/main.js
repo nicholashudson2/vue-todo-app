@@ -4,9 +4,11 @@ import { BootstrapVue } from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import Vuelidate from 'vuelidate';
+import moment from 'moment';
 
 Vue.use(BootstrapVue);
 Vue.use(Vuelidate);
+Vue.use(moment);
 
 Vue.config.productionTip = false;
 

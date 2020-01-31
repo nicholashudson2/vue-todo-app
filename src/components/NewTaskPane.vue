@@ -47,7 +47,15 @@
         label="Due Date"
         label-for="date-input"
       >
-        <b-input class="date-select" type="date" id="due-date-input" v-model="form.taskDueDate" />
+        <b-input
+          class="date-select"
+          type="date"
+          id="due-date-input"
+          v-model="form.taskDueDate"
+          :state="validateState('taskDueDate')"
+          aria-describedby="date-input-live-feedback"
+        />
+        <b-form-invalid-feedback id="date-input-live-feedback">Due date cannot be in the past.</b-form-invalid-feedback>
       </b-form-group>
     </b-form>
     <div class="btn-toolbar mr-4 float-right">
@@ -61,7 +69,10 @@
 <script>
 import axios from "axios";
 import { validationMixin } from "vuelidate";
-import required from "vuelidate/lib/validators/required";
+import { required } from "vuelidate/lib/validators";
+import moment from "moment";
+
+const minDate = date => (date ? moment(date).format('MM/DD/YYYY') >= moment(new Date()).format('MM/DD/YYYY') : true);
 
 export default {
   mixins: [validationMixin],
@@ -119,7 +130,7 @@ export default {
       this.$emit("submitted", {
         taskName: this.form.taskName,
         taskDescription: this.form.taskDescription,
-        taskDueDate: this.form.taskDueDate,
+        taskDueDate: moment(this.form.taskDueDate).format("MM/DD/YYYY"),
         completed: this.completed ? this.completed : false
       });
       this.form.taskName = "";
@@ -133,12 +144,18 @@ export default {
     validateState(name) {
       const { $dirty, $error } = this.$v.form[name];
       return $dirty ? !$error : null;
+    },
+    minDate(date) {
+      return date >= new Date();
     }
   },
   validations: {
     form: {
       taskName: {
         required
+      },
+      taskDueDate: {
+        minDate
       }
     }
   }
