@@ -1,44 +1,58 @@
 <template>
   <div class="task-dialog form-group">
     <div class="btn-toolbar mb-1 float-right">
-      <button class="btn btn-danger fa-window-close-o float-right" @click="cancel()">X</button>
+      <button class="btn btn-danger fa-window-close-o float-right btn-close" @click="cancel()">X</button>
     </div>
-    <form @submit.prevent="addTask" class="col-15">
-      <input
-        class="form-group row text-input mb-1"
-        type="text"
-        placeholder="Title"
-        v-model="taskName"
-        @input="onChange"
-      />
-      <ul class="autocomplete-results" v-if="suggestions.length >= 1 && taskName.length != 0">
-        <li
-          class="autocomplete-result"
-          v-for="(data, index) in suggestions"
-          :key="index"
-          @click="setResult(data)"
-        >{{ data }}</li>
-      </ul>
-      <input
-        class="form-group row text-area"
-        type="text"
-        placeholder="Description"
-        v-model="taskDescription"
-      />
-      <div class="form-group row-md">
-        <label for="due-date-input">Due Date</label>
-        <br />
-        <input
-          class="form-control date-select"
-          type="date"
-          id="due-date-input"
-          v-model="taskDueDate"
+    <b-form @submit.stop.prevent="onSubmit" @submit.prevent="addTask" class="col-12 input-form">
+      <b-form-group id="title-input-group" class="form-group" label="Title" label-for="title-input">
+        <b-input
+          id="title-input"
+          type="text"
+          class="row text-input"
+          v-model="$v.form.taskName.$model"
+          :state="validateState('taskName')"
+          aria-describedby="input-1-live-feedback"
         />
-      </div>
-    </form>
+        <b-form-invalid-feedback id="input-1-live-feedback">This is a required field.</b-form-invalid-feedback>
+        <ul
+          class="autocomplete-results"
+          v-if="suggestions.length >= 1 && $v.form.taskName.length != 0"
+        >
+          <li
+            class="autocomplete-result"
+            v-for="(data, index) in suggestions"
+            :key="index"
+            @click="setResult(data)"
+          >{{ data }}</li>
+        </ul>
+      </b-form-group>
+
+      <b-form-group
+        id="description-input-group"
+        class="form-group"
+        label="Description"
+        label-for="description-input"
+      >
+        <input
+          id="description-input"
+          type="text"
+          class="row text-area"
+          v-model="$v.form.taskDescription"
+        />
+      </b-form-group>
+
+      <b-form-group
+        id="date-input-group"
+        class="form-group row-md"
+        label="Due Date"
+        label-for="date-input"
+      >
+        <input class="date-select" type="date" id="due-date-input" v-model="$v.form.taskDueDate" />
+      </b-form-group>
+    </b-form>
     <div class="btn-toolbar mr-4 float-right">
-      <button class="btn btn-danger" @click="cancel()">Cancel</button>
-      <button class="btn btn-success" @click="submit()">Submit</button>
+      <b-button class="btn btn-danger" @click="cancel()">Cancel</b-button>
+      <b-button class="btn btn-success" @click="submit()">Submit</b-button>
     </div>
   </div>
 </template>
@@ -46,14 +60,19 @@
 
 <script>
 import axios from "axios";
+import { validationMixin } from "vuelidate";
+import required from "vuelidate/lib/validators/required";
 
 export default {
+  mixins: [validationMixin],
   name: "NewTaskPane",
   data() {
     return {
-      taskName: "",
-      taskDescription: "",
-      taskDueDate: "",
+      form: {
+        taskName: "",
+        taskDescription: "",
+        taskDueDate: ""
+      },
       suggestions: [],
       isOpen: false
     };
@@ -61,14 +80,14 @@ export default {
   methods: {
     addTask() {
       var windowConsole = window.console;
-      windowConsole.log(this.taskName);
+      windowConsole.log(this.$v.form.taskName);
       this.tasks.push({
-        taskName: this.taskName,
-        taskDescription: this.taskDescription,
-        taskDueDate: this.taskDueDate,
+        taskName: this.form.taskName,
+        taskDescription: this.form.taskDescription,
+        taskDueDate: this.form.taskDueDate,
         completed: false
       });
-      this.taskName = "";
+      this.$v.form.taskName = "";
     },
     onChange() {
       this.isOpen = true;
@@ -77,7 +96,7 @@ export default {
     filterResults() {
       var searchURL =
         "https://www.google.com/complete/search?q=" +
-        this.taskName +
+        this.form.taskName +
         "&cp=1&client=psy-ab";
       axios({ method: "GET", url: searchURL }).then(result => {
         this.suggestions = [];
@@ -93,26 +112,42 @@ export default {
       });
     },
     setResult(result) {
-      this.taskName = result;
+      this.form.taskName = result;
       this.isOpen = false;
       this.suggestions = [];
     },
     submit() {
+      this.$v.form.$touch();
+      if (this.$v.form.$anyError) {
+        return;
+      }
+
       var windowConsole = window.console;
       windowConsole.log(this.task);
       this.$emit("submitted", {
-        taskName: this.taskName,
-        taskDescription: this.taskDescription,
-        taskDueDate: this.taskDueDate,
+        taskName: this.form.taskName,
+        taskDescription: this.form.taskDescription,
+        taskDueDate: this.form.taskDueDate,
         completed: false
       });
-      this.taskName = "";
-      this.taskDescription = "";
+      this.form.taskName = "";
+      this.form.taskDescription = "";
     },
     cancel() {
       this.$emit("cancelled", "User cancelled task creation.");
-      this.taskName = "";
-      this.taskDescription = "";
+      this.form.taskName = "";
+      this.form.taskDescription = "";
+    },
+    validateState(name) {
+      const { $dirty, $error } = this.$v.form[name];
+      return $dirty ? !$error : null;
+    }
+  },
+  validations: {
+    form: {
+      taskName: {
+        required
+      }
     }
   }
 };
@@ -127,40 +162,21 @@ input {
 }
 
 .task-dialog {
-  /* position: absolute; */
-  background-color: white;
+  background-color: darkgray;
   opacity: 1;
   height: 50%;
   width: 50%;
   margin: 0;
 }
 
-.text-input {
-  width: 100%;
-  border: 0;
-  padding: 20px;
-  font-size: 1.3em;
-  background-color: #eeeeee;
-  color: #323333;
-  opacity: 1;
-  margin: 0;
-}
-
-.text-area {
-  width: 100%;
-  border: 0;
-  padding: 20px;
-  font-size: 1.3em;
-  background-color: #eeeeee;
-  color: #323333;
-  opacity: 1;
-  margin: 0;
-}
-
+.text-input,
+.text-area,
 .date-select {
   width: 100%;
   border: 0;
-  font-size: 1.3em;
+  border-radius: 0.3em;
+  padding: 0.7em;
+  font-size: 1.2em;
   background-color: #eeeeee;
   color: #323333;
   opacity: 1;
@@ -193,5 +209,17 @@ input {
 
 .mr-4 > button {
   margin: 5px;
+}
+
+button {
+  border-radius: 0.3em;
+}
+
+.btn-close {
+  z-index: 1;
+}
+
+.input-form {
+  z-index: 0;
 }
 </style>

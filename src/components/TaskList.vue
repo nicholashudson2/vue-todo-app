@@ -12,7 +12,7 @@
           <li
             v-for="(data) in incompleteTasks"
             :key="data.taskName"
-            :class="{'warning-red': new Date(data.taskDueDate) < Date.now(), 'warning-none': new Date(data.taskDueDate) >= Date.now()}"
+            :class="{'warning-red': new Date(data.taskDueDate) < Date.now(), 'warning-yellow': new Date(data.taskDueDate) < new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 5), 'warning-none': new Date(data.taskDueDate) >= Date.now()}"
           >
             <div class="task">
               <input type="checkbox" v-model="data.completed" />
@@ -31,7 +31,7 @@
       <div class="task-list-column">
         <h3 v-if="completedTasks.length >= 1">Completed Tasks:</h3>
         <ul class="completed-task-list">
-          <li v-for="(data) in completedTasks" :key="data.taskName">
+          <li v-for="(data) in completedTasks" :key="data.taskName" class="warning-done">
             <div class="task">
               <input class="form-check-input" type="checkbox" v-model="data.completed" />
               <div class="task-details">
@@ -69,14 +69,16 @@ export default {
       this.createTask = true;
     },
     deleteTask(data) {
-      this.tasks.filter((value, index) => {
-        if (
-          value.taskName == data.taskName &&
-          (value.taskDescription = data.taskDescription)
-        ) {
-          this.tasks.splice(index, 1);
-        }
-      });
+      if (confirm("Are you sure you want to delete this task?")) {
+        this.tasks.filter((value, index) => {
+          if (
+            value.taskName == data.taskName &&
+            value.taskDescription == data.taskDescription
+          ) {
+            this.tasks.splice(index, 1);
+          }
+        });
+      }
     },
     onTaskSubmitted(newTask) {
       this.tasks.push(newTask);
@@ -121,11 +123,11 @@ export default {
   left: 0;
   height: 100%;
   width: 100%;
-  margin: 0;
 }
 
 .new-task-pane {
   opacity: 1;
+  padding: 5px;
 }
 
 .task-list-columns-panel {
@@ -180,7 +182,15 @@ p {
   box-shadow: 0px 0px 40px lightgray;
 }
 
+.warning-yellow {
+  border-color: yellow;
+}
+
 .warning-red {
   border-color: red;
+}
+
+.warning-done {
+  border-color: lightgreen;
 }
 </style>
