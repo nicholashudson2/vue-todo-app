@@ -13,7 +13,9 @@
           :state="validateState('taskName')"
           aria-describedby="input-1-live-feedback"
         />
-        <b-form-invalid-feedback id="input-1-live-feedback">This is a required field.</b-form-invalid-feedback>
+        <b-form-invalid-feedback
+          id="input-1-live-feedback"
+        >This is a required field, and must be at least 3 characters.</b-form-invalid-feedback>
         <ul
           class="autocomplete-results"
           v-if="suggestions.length >= 1 && $v.form.taskName.length != 0"
@@ -69,7 +71,7 @@
 <script>
 import axios from "axios";
 import { validationMixin } from "vuelidate";
-import { required } from "vuelidate/lib/validators";
+import { required, minLength } from "vuelidate/lib/validators";
 
 const minDate = date =>
   date
@@ -157,7 +159,8 @@ export default {
   validations: {
     form: {
       taskName: {
-        required
+        required,
+        minLength: minLength(3)
       },
       taskDueDate: {
         minDate
