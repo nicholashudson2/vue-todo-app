@@ -4,11 +4,11 @@ import { BootstrapVue } from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import Vuelidate from 'vuelidate';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 Vue.use(BootstrapVue);
 Vue.use(Vuelidate);
-Vue.use(moment);
+Object.defineProperty(Vue.prototype, '$dayjs', { value: dayjs });
 
 Vue.config.productionTip = false;
 

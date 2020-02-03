@@ -169,6 +169,7 @@ export default {
   flex-basis: 1 1 auto;
   margin: 1em;
   align-items: unset;
+  width: 50%;
 }
 
 .right-column {

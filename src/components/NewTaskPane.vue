@@ -70,9 +70,12 @@
 import axios from "axios";
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
-import moment from "moment";
 
-const minDate = date => (date ? moment(date).format('MM/DD/YYYY') >= moment(new Date()).format('MM/DD/YYYY') : true);
+const minDate = date =>
+  date
+    ? this.$dayjs(date).format("MM/DD/YYYY") >=
+      this.$dayjs(new Date()).format("MM/DD/YYYY")
+    : true;
 
 export default {
   mixins: [validationMixin],
@@ -130,7 +133,9 @@ export default {
       this.$emit("submitted", {
         taskName: this.form.taskName,
         taskDescription: this.form.taskDescription,
-        taskDueDate: moment(this.form.taskDueDate).format("MM/DD/YYYY"),
+        taskDueDate: this.form.taskDueDate
+          ? this.$dayjs(this.form.taskDueDate).format("MM/DD/YYYY")
+          : this.form.taskDueDate,
         completed: this.completed ? this.completed : false
       });
       this.form.taskName = "";
