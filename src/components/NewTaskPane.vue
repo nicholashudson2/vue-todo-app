@@ -72,11 +72,11 @@
 import axios from "axios";
 import { validationMixin } from "vuelidate";
 import { required, minLength } from "vuelidate/lib/validators";
+import dayjs from "dayjs";
 
 const minDate = date =>
   date
-    ? this.$dayjs(date).format("MM/DD/YYYY") >=
-      this.$dayjs(new Date()).format("MM/DD/YYYY")
+    ? dayjs(date).format("MM/DD/YYYY") >= dayjs(new Date()).format("MM/DD/YYYY")
     : true;
 
 export default {
@@ -109,18 +109,23 @@ export default {
         "https://www.google.com/complete/search?q=" +
         this.form.taskName +
         "&cp=1&client=psy-ab";
-      axios({ method: "GET", url: searchURL }).then(result => {
-        this.suggestions = [];
-        if (result && result.data && result.data.length) {
-          result.data[1].reduce((acc, curr) =>
-            this.suggestions.push(
-              curr[0].replace("<b>", "").replace("</b>", "")
-            )
-          );
-        } else {
-          this.suggestions.push("Unable to load suggestions.");
-        }
-      });
+      axios({ method: "GET", url: searchURL })
+        .then(result => {
+          this.suggestions = [];
+          if (result && result.data && result.data.length) {
+            result.data[1].reduce((acc, curr) =>
+              this.suggestions.push(
+                curr[0].replace("<b>", "").replace("</b>", "")
+              )
+            );
+          } else {
+            this.suggestions.push("Unable to load suggestions.");
+          }
+        })
+        .catch(error => {
+          var console = Window.console;
+          console.error(error);
+        });
     },
     setResult(result) {
       this.form.taskName = result;
@@ -135,9 +140,7 @@ export default {
       this.$emit("submitted", {
         taskName: this.form.taskName,
         taskDescription: this.form.taskDescription,
-        taskDueDate: this.form.taskDueDate
-          ? this.$dayjs(this.form.taskDueDate).format("MM/DD/YYYY")
-          : this.form.taskDueDate,
+        taskDueDate: this.form.taskDueDate,
         completed: this.completed ? this.completed : false
       });
       this.form.taskName = "";

@@ -1,10 +1,10 @@
 <template>
   <div class="holder">
     <b-button size="sm" class="btn btn-success" @click="editTask(null)">Create New Task</b-button>
-    <div class="new-task-container" v-if="createTask == true">
+    <div class="new-task-container" v-if="this.$store.state.createTask == true">
       <NewTaskPane
         class="new-task-pane"
-        v-bind:task="currentTask"
+        v-bind:task="this.$store.state.currentTask"
         @submitted="onTaskSubmitted"
         @cancelled="onTaskCancelled"
       />
@@ -69,11 +69,7 @@ import NewTaskPane from "./NewTaskPane.vue";
 export default {
   name: "TaskList",
   data() {
-    return {
-      currentTask: null,
-      tasks: [],
-      createTask: false
-    };
+    return {};
   },
   components: {
     NewTaskPane
@@ -81,44 +77,31 @@ export default {
   methods: {
     deleteTask(task) {
       if (confirm("Are you sure you want to delete this task?")) {
-        this.removeTaskFromList(task);
+        this.$store.commit("removeTask", { task: task });
       }
     },
     editTask(task) {
-      this.currentTask = task;
-      this.createTask = true;
+      this.$store.commit("setCurrentTask", { currentTask: task });
+      this.$store.dispatch("beginCreateTask");
     },
     removeTaskFromList(task) {
-      this.tasks.filter((value, index) => {
-        if (
-          value.taskName == task.taskName &&
-          value.taskDescription == task.taskDescription
-        ) {
-          this.tasks.splice(index, 1);
-        }
-      });
+      this.$store.commit("removeTask", { task: task });
     },
     onTaskSubmitted(newTask) {
-      if (this.currentTask != null) {
-        this.removeTaskFromList(this.currentTask);
-        this.tasks.push(newTask);
-      } else {
-        this.tasks.push(newTask);
-      }
-      this.createTask = false;
+      this.$store.dispatch("submitTask", { newTask: newTask });
     },
     onTaskCancelled() {
-      this.createTask = false;
+      this.$store.dispatch("finishCreateTask");
     }
   },
   computed: {
     incompleteTasks: function() {
-      return this.tasks
+      return this.$store.state.tasks
         .filter(task => task.completed == false)
         .sort((a, b) => (a.taskDueDate > b.taskDueDate ? 1 : -1));
     },
     completedTasks: function() {
-      return this.tasks
+      return this.$store.state.tasks
         .filter(task => task.completed == true)
         .sort((a, b) => (a.taskDueDate > b.taskDueDate ? 1 : -1));
     }
